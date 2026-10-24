@@ -8,14 +8,18 @@ import { generateAccessToken, generateRefreshToken, JwtPayload } from "../util/j
 
 export const loginService=async(authDTO:AuthDTO)=>{
  try{
-     if (!authDTO.userName?.trim()|| !authDTO.password?.trim()) {
+      console.log("wait01 : ", authDTO.username)
+     if (!authDTO.username?.trim()|| !authDTO.password?.trim()) {
+      console.log("wait02 : ", authDTO.username)
         throw new Error("username and password reqired")
     }
-        const loginUserDetails=await user.findOne({name:authDTO.userName});
-          if(!loginUserDetails){
-            console.log("user not fountf")
-            throw new Error("user not found or user password not correct")
-  }
+    await console.log("loginDetails :",authDTO.username)
+        const loginUserDetails=await user.findOne({name:authDTO.username,userRole:authDTO.role});
+        
+         if (!loginUserDetails || loginUserDetails.userRole !== authDTO.role) {
+            console.log("User not found or role does not match");
+            throw new Error("User not found or password is incorrect");
+}
         const payload:JwtPayload={
             userId:loginUserDetails?._id.toString(),
             userRole:loginUserDetails.userRole
@@ -24,7 +28,7 @@ export const loginService=async(authDTO:AuthDTO)=>{
         const accessToken=await generateAccessToken(payload);
         const refreshToken=await generateRefreshToken(payload);
         return {
-                accessToken,refreshToken
+                accessToken,refreshToken,loginUserDetails
         }
             
         
@@ -54,4 +58,17 @@ export const saveUserService=async(userDTO:UserDTO|null)=>{
          }
          return savedUser;
 
+}
+
+export const getMyDetailsService=(userId:string)=>{
+  if(!userId){
+    throw new Error("cant load user id not pass valid user id")
+  }
+  const myDetails=user.findById(userId);
+
+  if(!myDetails){
+    throw new Error("details not found")
+  }
+
+  return myDetails;
 }

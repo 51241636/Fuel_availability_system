@@ -3,11 +3,13 @@ import "./Login.css";
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { loginUser } from "../services/AuthService";
+import { Navigate, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthConext";
 
-type Role = "customer" | "owner";
+type Role = "driver" | "owner" ;
 
 const ROLE_COPY: Record<Role,{ heading: string; sub: string; button: string; helper: string; link: string }> = {
-  customer: {
+  driver: {
     heading: "Find fuel near you",
     sub: "Sign in to see which stations have stock right now.",
     button: "Sign in and open map",
@@ -32,12 +34,25 @@ const FUELS = [
 ] as const;
 
 function Login() {
-  const [role, setRole] = useState<Role>("customer");
+  const [role, setRole] = useState<Role>("driver");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [userLoading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  // const navigate = useNavigate();
+  const {user,loading}=useAuth();
+
+  if(loading){
+    return(
+      <p> checkAuthentication</p>
+    )
+  }
+
+  if(user?.userRole === "owner"){
+    return <Navigate to="/dashboard" replace />;
+    
+  }
 
   const copy = ROLE_COPY[role];
 
@@ -54,7 +69,11 @@ function Login() {
       setLoading(true);
 
       const response = await loginUser({ username, password, role });
-      console.log("Login successful:", response);
+      console.log(response.data.userData.userRole)
+      if(response.data.userData.userRole === "owner"){
+        return <Navigate to="/dashboard" replace />;
+      }
+      // console.log("Login successful:", response);
     } catch (error:any) {
       console.error("Login failed:", error.response.message);
       setError("Username or password is incorrect. Check them and try again.");
@@ -175,9 +194,9 @@ function Login() {
             <button
               type="button"
               role="tab"
-              aria-selected={role === "customer"}
+              aria-selected={role === "driver"}
               className="fs-tab"
-              onClick={() => setRole("customer")}
+              onClick={() => setRole("driver")}
             >
               Driver
             </button>
@@ -190,6 +209,7 @@ function Login() {
             >
               Station owner
             </button>
+            
           </div>
 
           <h2 className="fs-form-heading">{copy.heading}</h2>
@@ -246,8 +266,8 @@ function Login() {
               </a>
             </div>
 
-            <button type="submit" className="fs-submit" disabled={loading}>
-              {loading ? "Signing in..." : copy.button}
+            <button type="submit" className="fs-submit" disabled={userLoading}>
+              {userLoading ? "Signing in..." : copy.button}
             </button>
           </form>
 

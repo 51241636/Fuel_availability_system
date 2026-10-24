@@ -1,3 +1,3 @@
 export enum userRoles{
-    ADMIN,CASHIER,SELLER
+    ADMIN,DRIVER,OWNER
 }

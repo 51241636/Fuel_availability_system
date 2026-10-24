@@ -2,16 +2,18 @@ import { Request, Response } from "express";
 import user from "../models/user";
 import { generateAccessToken, JwtPayload,generateRefreshToken } from "../util/jwtToken";
 import { AuthDTO } from "../DTO/authDTO";
-import { loginService, saveUserService } from "../service/authService";
+import { getMyDetailsService, loginService, saveUserService } from "../service/authService";
 import { UserDTO } from "../DTO/userDTO";
+import { AuthRequest } from "../middlewares/authMiddleware";
 
 
 
 export const login=async(req:Request,res:Response)=>{
         try{
             const authDTO:AuthDTO=req.body;
-            console.log(authDTO)
-            const result=loginService(authDTO)
+            console.log("authdto",authDTO)
+            const result=await loginService(authDTO)
+            console.log("result : ",result)
 
               await res.cookie("refreshToken", (await result).refreshToken, {
             httpOnly: true,
@@ -23,7 +25,8 @@ export const login=async(req:Request,res:Response)=>{
 
         res.status(200).json({
         message:"user logging successfully",
-        accessToken:(await result).accessToken
+        accessToken:(await result).accessToken,
+        userData:(await result).loginUserDetails
     })
   
         }catch(error){
@@ -56,4 +59,25 @@ export const registerUser=async (req:Request,res:Response)=>{
             })
         }
    
+}
+
+export const getMyDetails=async(req:AuthRequest,res:Response)=>{
+    try{
+        if (!req.userId) {
+    
+        return res.status(401).json({ message: "Unauthorized" });
+        }
+    const loggedUserDetail=await getMyDetailsService(req.userId);
+     res.status(200).json({
+            myDetails:loggedUserDetail
+        });
+     
+    }catch(error){
+        const message=error instanceof Error ? error.message : "something went wrong"
+            const status =404
+            return res.status(status).json({
+                 success:false,
+                 message
+            })
+    }
 }
