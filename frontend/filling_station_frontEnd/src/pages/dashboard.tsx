@@ -1,8 +1,10 @@
 
 import React from "react";
 import "./Dashboard.css";
-import { FaGasPump } from "react-icons/fa";
+
 import { GrStatusGoodSmall } from "react-icons/gr";
+import { SideBar } from "./sidebar";
+import { Navigate, useNavigate } from "react-router-dom";
 const Dashboard = () => {
   const stats = [
     {
@@ -73,41 +75,16 @@ let value;
     }
   })
 
+   const navigate = useNavigate();
+  
+    const handleClick = () => {
+      // 2. Trigger the navigation with the replace option on click
+      navigate('/addNewStation', { replace: true });
+    };
+
   return (
     <div className="pump-dashboard">
-        {/* side bar design */}
-      <aside className="pump-sidebar">
-        <div className="pump-brand">
-          <div className="pump-brand-icon">
-    
-          </div>
-          <h2>PumpCheck</h2>
-        </div>
-
-        <nav className="pump-button">
-          <a href="#" className="pump-nav-link active">
-            Dashboard
-          </a>
-          <a href="#" className="pump-nav-link">
-            My station
-          </a>
-          <a href="#" className="pump-nav-link">
-            Fuel stock
-          </a>
-          <a href="#" className="pump-nav-link">
-            Map view
-          </a>
-          <a href="#" className="pump-nav-link">
-            Settings
-          </a>
-        </nav>
-
-        <div className="pump-sidebar-footer">
-          <span/>
-          <GrStatusGoodSmall className="pump-status-dot" />
-          Station owner portal
-        </div>
-      </aside>
+      <SideBar/>
 
       {/* Main content */}
       <main className="pump-main">
@@ -183,9 +160,7 @@ let value;
             <button
               type="button"
               className="pump-primary-button"
-              onClick={() => {
-                window.location.href = "/my-station";
-              }}
+              onClick={handleClick}
             >
               <span>+</span> Add your filling station
             </button>
