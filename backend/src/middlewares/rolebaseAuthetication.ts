@@ -6,7 +6,8 @@ export const roleAuthenticate=(...userRole:string[])=>{
         console.log("request user role : ",req.userRole)
         console.log("authenticate role : ",userRole)
 
-        if(!req.userRole || !userRole.includes(req.userRole)){
+        if(!req.userRole || !userRole.some((role)=> role.toLowerCase() === req.userRole?.toLowerCase())){
+            console.log("access denied")
             return res.status(403).json({ message: 'Access denied: Insufficient permissions' });
         }
         next();

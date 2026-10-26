@@ -15,12 +15,21 @@ import type { LatLng } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { SideBar } from "./sidebar";
 import "./addStation.css"
+import { loadStation } from "../services/stationService";
 
-interface FuelOption{
-  fuelName :string,
-  curentStock:number,
+export interface FuelOption{
+  fuelType :string,
+  currentStock:number,
   tankCapacity:number,
   fuelPrice : number
+}
+
+export interface StationFormDetail{
+  stationName:string,
+  stationContact:string,
+   stationEmail:string;
+        stationAddress:string;
+
 }
 
 
@@ -61,11 +70,34 @@ useEffect(() => {
   return null;
 }
 
-function AddFillingStationLocation() {
-  const [position, setPosition] = useState<LatLng | null>(
+export default function AddStationMap() {
+  const [fuel, setFuelDetail] = useState<FuelOption[]>([
+    { fuelType: 'OcTane92', currentStock: 7600,  tankCapacity : 10000,fuelPrice : 414},
+     { fuelType: 'OcTane95', currentStock:8000,  tankCapacity : 10000,fuelPrice : 453},
+     { fuelType: 'Diesel', currentStock: 7500,  tankCapacity : 10000,fuelPrice : 379},
+      { fuelType: 'SuperDiesel', currentStock: 8000,  tankCapacity : 10000,fuelPrice : 580},
+       { fuelType: 'Kerosene', currentStock: 3400,  tankCapacity : 8000,fuelPrice : 290}
+  ]);
+
+  // 2. Selected items array
+  const [stationDetails, setStationDetails] = useState<StationFormDetail>({
+      stationName: "",
+      stationContact: "",
+      stationEmail: "",
+      stationAddress: "",
+  })
+  const [selectedItems, setSelectedItems] = useState<FuelOption[]>([]);
+  const [openingTime, setOpeningTime] = useState("06:00");
+  const [closingTime, setClosingTime] = useState("22:00");
+
+ const [position, setPosition] = useState<LatLng | null>(
     null
   );
   
+
+// set map marker fuel station location
+function AddFillingStationLocation() {
+ 
 
   useMapEvents({
     click(e) {
@@ -96,24 +128,11 @@ function AddFillingStationLocation() {
   );
 }
 
-export default function AddStationMap() {
 
-    const [fuel, setFuelDetail] = useState<FuelOption[]>([
-    { fuelName: 'OcTane92', curentStock: 7600,  tankCapacity : 10000,fuelPrice : 414},
-     { fuelName: 'OcTane95', curentStock:8000,  tankCapacity : 10000,fuelPrice : 453},
-     { fuelName: 'Diesel', curentStock: 7500,  tankCapacity : 10000,fuelPrice : 379},
-      { fuelName: 'SuperDiesel', curentStock: 8000,  tankCapacity : 10000,fuelPrice : 580},
-       { fuelName: 'Kerosene', curentStock: 3400,  tankCapacity : 8000,fuelPrice : 290}
-  ]);
-
-  // 2. Selected items array
-  const [selectedItems, setSelectedItems] = useState<FuelOption[]>([]);
-  const [openingTime, setOpeningTime] = useState("06:00");
-  const [closingTime, setClosingTime] = useState("22:00");
-
+    
   // 3. Handle changing the price in the text/number input
-  const handleFieldChange = (fuelName: string,fieldDetail : string, fieldName:string) => {
-    console.log("calling",fuelName)
+  const handleFieldChange = (fuelType: string,fieldDetail : string, fieldName:string) => {
+    console.log("calling",fuelType)
     const fuelDetail = parseFloat(fieldDetail) || 0;
 
     if(fieldName === "Tank_capacity"){
@@ -121,14 +140,14 @@ export default function AddStationMap() {
     // Update master options list
     setSelectedItems((prevOptions) =>
       prevOptions.map((item) =>
-        item.fuelName === fuelName ? { ...item, tankCapacity: fuelDetail } : item
+        item.fuelType === fuelType ? { ...item, tankCapacity: fuelDetail } : item
       )
     );
 
     // Sync changes over to the selected items array if it is already checked
     setSelectedItems((prevSelected) =>
       prevSelected.map((item) =>
-        item.fuelName === fuelName ? { ...item, tankCapacity: fuelDetail } : item
+        item.fuelType === fuelType ? { ...item, tankCapacity: fuelDetail } : item
       )
     );
     }else if (fieldName === "current_stock"){
@@ -136,14 +155,14 @@ export default function AddStationMap() {
     // Update master options list
     setSelectedItems((prevOptions) =>
       prevOptions.map((item) =>
-        item.fuelName === fuelName ? { ...item, curentStock: fuelDetail } : item
+        item.fuelType === fuelType ? { ...item, currentStock: fuelDetail } : item
       )
     );
 
     // Sync changes over to the selected items array if it is already checked
     setSelectedItems((prevSelected) =>
       prevSelected.map((item) =>
-        item.fuelName === fuelName ? { ...item, curentStock: fuelDetail } : item
+        item.fuelType === fuelType ? { ...item, currentStock: fuelDetail } : item
       )
     );
     }else{
@@ -151,14 +170,14 @@ export default function AddStationMap() {
     // Update master options list
     setSelectedItems((prevOptions) =>
       prevOptions.map((item) =>
-        item.fuelName === fuelName ? { ...item, fuelPrice: fuelDetail } : item
+        item.fuelType === fuelType ? { ...item, fuelPrice: fuelDetail } : item
       )
     );
 
     // Sync changes over to the selected items array if it is already checked
     setSelectedItems((prevSelected) =>
       prevSelected.map((item) =>
-        item.fuelName === fuelName ? { ...item, fuelPrice: fuelDetail } : item
+        item.fuelType === fuelType ? { ...item, fuelPrice: fuelDetail } : item
       )
     );
     }
@@ -173,13 +192,17 @@ export default function AddStationMap() {
       // console.log("selectedItemList",selectedItems)
     } else {
         // console.log("selectedItemList02 ",selectedItems)
-      setSelectedItems((prev) => prev.filter((item) => item.fuelName !== option.fuelName));
+      setSelectedItems((prev) => prev.filter((item) => item.fuelType !== option.fuelType));
     
     }
   };
   useEffect(() => {
   console.log("Updated selectedItems:", selectedItems);
 }, [selectedItems]);
+
+const addFillingStation=async()=>{
+    await loadStation(stationDetails,position,selectedItems,openingTime,closingTime);
+}
 
 
 useEffect(() => {
@@ -212,6 +235,13 @@ useEffect(() => {
               id="stationName"
               name="stationName"
               placeholder="Enter your station name"
+                value={stationDetails?.stationName}
+                onChange={(e) =>
+                  setStationDetails({
+                    ...stationDetails,
+                    stationName: e.target.value,
+                  })
+                }
             />
           </div>
 
@@ -223,6 +253,13 @@ useEffect(() => {
                 id="phone"
                 name="phone"
                 placeholder="011 234 5678"
+                value={stationDetails?.stationContact}
+                onChange={(e) =>
+                  setStationDetails({
+                    ...stationDetails,
+                    stationContact: e.target.value,
+                  })
+                }
               />
             </div>
 
@@ -233,6 +270,13 @@ useEffect(() => {
                 id="email"
                 name="email"
                 placeholder="station@example.com"
+                value={stationDetails?.stationEmail}
+                onChange={(e) =>
+                  setStationDetails({
+                    ...stationDetails,
+                    stationEmail: e.target.value,
+                  })
+                }
               />
             </div>
           </div>
@@ -244,6 +288,13 @@ useEffect(() => {
               id="address"
               name="address"
               placeholder="Enter your station address"
+              value={stationDetails?.stationAddress}
+                onChange={(e) =>
+                  setStationDetails({
+                    ...stationDetails,
+                    stationAddress: e.target.value,
+                  })
+                }
             />
           </div>
         </form>
@@ -320,11 +371,11 @@ useEffect(() => {
                 <div className="fuel-list">
                   {fuel.map((availableFuel) => {
     const isChecked = selectedItems.some(
-      (item) => item.fuelName === availableFuel.fuelName
+      (item) => item.fuelType === availableFuel.fuelType
     );
 
     return (
-      <div key={availableFuel.fuelName} className="fuel-row">
+      <div key={availableFuel.fuelType} className="fuel-row">
         <label className="fuel-name">
           <input
             type="checkbox"
@@ -333,23 +384,23 @@ useEffect(() => {
               handleCheckboxChange(event, availableFuel)
             }
           />
-          <span>{availableFuel.fuelName}</span>
+          <span>{availableFuel.fuelType}</span>
         </label>
 
        <input
             type="number"
             defaultValue={availableFuel.tankCapacity}
             onChange={(e) =>
-              handleFieldChange(availableFuel.fuelName, e.target.value,"Tank_capacity")
+              handleFieldChange(availableFuel.fuelType, e.target.value,"Tank_capacity")
             }
             placeholder="0.00"
           />
 
         <input
           type="number"
-          defaultValue={availableFuel.curentStock}
+          defaultValue={availableFuel.currentStock}
             onChange={(e) =>
-              handleFieldChange(availableFuel.fuelName, e.target.value,"current_stock")
+              handleFieldChange(availableFuel.fuelType, e.target.value,"current_stock")
             }
             placeholder="0.00"
         />
@@ -358,7 +409,7 @@ useEffect(() => {
           type="number"
           defaultValue={availableFuel.fuelPrice}
             onChange={(e) =>
-              handleFieldChange(availableFuel.fuelName, e.target.value,"fuel_price")
+              handleFieldChange(availableFuel.fuelType, e.target.value,"fuel_price")
             }
             placeholder="0.00"
         />
@@ -433,7 +484,7 @@ useEffect(() => {
     Cancel
   </button>
 
-  <button type="submit" className="add-station-btn" onClick={addNewStation}>
+  <button type="submit" className="add-station-btn" onClick={addFillingStation}>
     Add Station to the map
   </button>
 </div>
@@ -443,11 +494,6 @@ useEffect(() => {
             </main>
     </div>
   );
-}
-
-const addNewStation=()=>{
-
-
 }
 
 

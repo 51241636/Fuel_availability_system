@@ -1,6 +1,7 @@
 import { NextFunction, Request,Response } from "express";
 import jwt from "jsonwebtoken";
 import { JwtPayload } from "../util/jwtToken";
+import { userRoles } from "../enums/userRoleEnum";
 
 
 export interface AuthRequest extends Request{
@@ -10,7 +11,6 @@ export interface AuthRequest extends Request{
 
 export const authenticate=(req:AuthRequest,res:Response,next:NextFunction)=>{
     const authHeader=req.headers.authorization;
-    console.log("authHeader : ",authHeader)
 
     if(!authHeader){
         return res.status(401).json({
@@ -21,6 +21,7 @@ export const authenticate=(req:AuthRequest,res:Response,next:NextFunction)=>{
     const token=authHeader.split(" ")[1];
 
     if (!token) {
+     
     return res.status(401).json({
         message: "Invalid authorization header"
     });
@@ -31,11 +32,12 @@ try{
         process.env.JWT_SECRET!
     )as JwtPayload
 
+
     req.userId=decode.userId;
     req.userRole=decode.userRole;
-
     next();
 }catch(error){
+    console.log(error)
     return res.status(401).json({
         message: "Invalid or expired token"
     });
