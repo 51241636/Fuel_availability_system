@@ -2,7 +2,7 @@
 import { UserDTO } from "../DTO/userDTO";
 import { statusManage } from "../enums/statusManage";
 import IUser from "../interface/userInterface";
-import user from "../models/user";
+import user from "../Repository/user";
 const { MongoClient, ObjectId } = require('mongodb');
 
 

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import user from "../models/user";
+import user from "../Repository/user";
 import { generateAccessToken, JwtPayload,generateRefreshToken } from "../util/jwtToken";
 import { AuthDTO } from "../DTO/authDTO";
 import { getMyDetailsService, loginService, saveUserService } from "../service/authService";

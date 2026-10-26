@@ -3,7 +3,7 @@ import { AuthDTO } from "../DTO/authDTO";
 import { UserDTO } from "../DTO/userDTO";
 import { statusManage } from "../enums/statusManage";
 import IUser from "../interface/userInterface";
-import user from "../models/user";
+import user from "../Repository/user";
 import { generateAccessToken, generateRefreshToken, JwtPayload } from "../util/jwtToken";
 
 export const loginService=async(authDTO:AuthDTO)=>{

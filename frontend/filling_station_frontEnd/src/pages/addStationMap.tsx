@@ -16,6 +16,16 @@ import "leaflet/dist/leaflet.css";
 import { SideBar } from "./sidebar";
 import "./addStation.css"
 
+interface FuelOption{
+  fuelName :string,
+  curentStock:number,
+  tankCapacity:number,
+  fuelPrice : number
+}
+
+
+
+
 function SearchField() {
   const map = useMap(); // Access the Leaflet map instance
 
@@ -51,32 +61,11 @@ useEffect(() => {
   return null;
 }
 
-
-// function addMark() {
-//   const position = [51.505, -0.09];
-
-//   const handleMarkerClick = (e) => {
-//     console.log("Marker clicked!", e);
-//     // 'e.target' points to the underlying Leaflet marker object
-//     const { lat, lng } = e.target.getLatLng(); 
-//     console.log(`Latitude: ${lat}, Longitude: ${lng}`);
-//   };
-//    return (
-//     <Marker 
-//       position={position}
-//       eventHandlers={{
-//         click: handleMarkerClick,
-//       }}
-//     >
-//       <Popup>You clicked the marker!</Popup>
-//     </Marker>
-//   );
-// }
-
 function AddFillingStationLocation() {
   const [position, setPosition] = useState<LatLng | null>(
     null
   );
+  
 
   useMapEvents({
     click(e) {
@@ -108,6 +97,95 @@ function AddFillingStationLocation() {
 }
 
 export default function AddStationMap() {
+
+    const [fuel, setFuelDetail] = useState<FuelOption[]>([
+    { fuelName: 'OcTane92', curentStock: 7600,  tankCapacity : 10000,fuelPrice : 414},
+     { fuelName: 'OcTane95', curentStock:8000,  tankCapacity : 10000,fuelPrice : 453},
+     { fuelName: 'Diesel', curentStock: 7500,  tankCapacity : 10000,fuelPrice : 379},
+      { fuelName: 'SuperDiesel', curentStock: 8000,  tankCapacity : 10000,fuelPrice : 580},
+       { fuelName: 'Kerosene', curentStock: 3400,  tankCapacity : 8000,fuelPrice : 290}
+  ]);
+
+  // 2. Selected items array
+  const [selectedItems, setSelectedItems] = useState<FuelOption[]>([]);
+  const [openingTime, setOpeningTime] = useState("06:00");
+  const [closingTime, setClosingTime] = useState("22:00");
+
+  // 3. Handle changing the price in the text/number input
+  const handleFieldChange = (fuelName: string,fieldDetail : string, fieldName:string) => {
+    console.log("calling",fuelName)
+    const fuelDetail = parseFloat(fieldDetail) || 0;
+
+    if(fieldName === "Tank_capacity"){
+      
+    // Update master options list
+    setSelectedItems((prevOptions) =>
+      prevOptions.map((item) =>
+        item.fuelName === fuelName ? { ...item, tankCapacity: fuelDetail } : item
+      )
+    );
+
+    // Sync changes over to the selected items array if it is already checked
+    setSelectedItems((prevSelected) =>
+      prevSelected.map((item) =>
+        item.fuelName === fuelName ? { ...item, tankCapacity: fuelDetail } : item
+      )
+    );
+    }else if (fieldName === "current_stock"){
+      
+    // Update master options list
+    setSelectedItems((prevOptions) =>
+      prevOptions.map((item) =>
+        item.fuelName === fuelName ? { ...item, curentStock: fuelDetail } : item
+      )
+    );
+
+    // Sync changes over to the selected items array if it is already checked
+    setSelectedItems((prevSelected) =>
+      prevSelected.map((item) =>
+        item.fuelName === fuelName ? { ...item, curentStock: fuelDetail } : item
+      )
+    );
+    }else{
+      
+    // Update master options list
+    setSelectedItems((prevOptions) =>
+      prevOptions.map((item) =>
+        item.fuelName === fuelName ? { ...item, fuelPrice: fuelDetail } : item
+      )
+    );
+
+    // Sync changes over to the selected items array if it is already checked
+    setSelectedItems((prevSelected) =>
+      prevSelected.map((item) =>
+        item.fuelName === fuelName ? { ...item, fuelPrice: fuelDetail } : item
+      )
+    );
+    }
+  };
+
+  // 4. Handle checking/unchecking the box
+  const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>, option: FuelOption) => {
+    const { checked } = event.target;
+
+    if (checked) {
+      setSelectedItems((prev) => [...prev, option]);
+      // console.log("selectedItemList",selectedItems)
+    } else {
+        // console.log("selectedItemList02 ",selectedItems)
+      setSelectedItems((prev) => prev.filter((item) => item.fuelName !== option.fuelName));
+    
+    }
+  };
+  useEffect(() => {
+  console.log("Updated selectedItems:", selectedItems);
+}, [selectedItems]);
+
+
+useEffect(() => {
+  console.log("Opening Time:", openingTime);
+  console.log("Closing Time:", closingTime);
+}, [openingTime, closingTime]);
   return (
     <div className="pump-dashboard">
             <SideBar/>
@@ -239,51 +317,54 @@ export default function AddStationMap() {
                 <span>Tank capacity (L)</span>
                 <span>Current stock (L)</span>
               </div>
-                    <div className="fuel-list">
-            <div className="fuel-row">
-              <label className="fuel-name">
-                <input type="checkbox" defaultChecked />
-                <span>Petrol 92</span>
-              </label>
-              <input type="number" defaultValue={10000} />
-              <input type="number" defaultValue={7800} />
-            </div>
+                <div className="fuel-list">
+                  {fuel.map((availableFuel) => {
+    const isChecked = selectedItems.some(
+      (item) => item.fuelName === availableFuel.fuelName
+    );
 
-            <div className="fuel-row">
-              <label className="fuel-name">
-                <input type="checkbox" defaultChecked />
-                <span>Petrol 95</span>
-              </label>
-              <input type="number" defaultValue={10000} />
-              <input type="number" defaultValue={3400} />
-            </div>
+    return (
+      <div key={availableFuel.fuelName} className="fuel-row">
+        <label className="fuel-name">
+          <input
+            type="checkbox"
+            checked={isChecked}
+            onChange={(event) =>
+              handleCheckboxChange(event, availableFuel)
+            }
+          />
+          <span>{availableFuel.fuelName}</span>
+        </label>
 
-            <div className="fuel-row">
-              <label className="fuel-name" >
-                <input type="checkbox" defaultChecked  />
-                <span>Auto Diesel</span>
-              </label>
-              <input type="number" defaultValue={10000} />
-              <input type="number" defaultValue={9100} />
-            </div>
+       <input
+            type="number"
+            defaultValue={availableFuel.tankCapacity}
+            onChange={(e) =>
+              handleFieldChange(availableFuel.fuelName, e.target.value,"Tank_capacity")
+            }
+            placeholder="0.00"
+          />
 
-            <div className="fuel-row">
-              <label className="fuel-name">
-                <input type="checkbox" defaultChecked />
-                <span>Super Diesel</span>
-              </label>
-              <input type="number" defaultValue={10000} />
-              <input type="number" defaultValue={0} />
-            </div>
-
-            <div className="fuel-row">
-              <label className="fuel-name">
-                <input type="checkbox"  />
-                <span>Kerosene</span>
-              </label>
-              <input type="number" defaultValue={0} />
-              <input type="number" defaultValue={0} />
-            </div>
+        <input
+          type="number"
+          defaultValue={availableFuel.curentStock}
+            onChange={(e) =>
+              handleFieldChange(availableFuel.fuelName, e.target.value,"current_stock")
+            }
+            placeholder="0.00"
+        />
+          <label className="fuel-name">Fuel unit price</label>
+        <input
+          type="number"
+          defaultValue={availableFuel.fuelPrice}
+            onChange={(e) =>
+              handleFieldChange(availableFuel.fuelName, e.target.value,"fuel_price")
+            }
+            placeholder="0.00"
+        />
+      </div>
+    );
+  })}
           </div>
 
        </section>
@@ -295,7 +376,7 @@ export default function AddStationMap() {
   </div>
 
   <div className="opening-hours-options">
-    <button type="button" className="hours-option">
+    <button type="button" className="hours-option" >
       Open 24 hours
     </button>
 
@@ -310,18 +391,20 @@ export default function AddStationMap() {
         <span className="opening-day">From</span>
 
         <div className="opening-time-inputs">
-          <input
-            type="time"
-            aria-label={`opening time`}
-            defaultValue="06:00"
-          />
+           <input
+              type="time"
+              aria-label="Opening time"
+              value={openingTime}
+              onChange={(e) => setOpeningTime(e.target.value)}
+            />
 
           <span className="time-separator">to</span>
 
           <input
-            type="time"
-            aria-label={`closing time`}
-            defaultValue="22:00"
+           type="time"
+           aria-label="Closing time"
+           value={closingTime}
+           onChange={(e) => setClosingTime(e.target.value)}
           />
         </div>
       </div>
@@ -350,7 +433,7 @@ export default function AddStationMap() {
     Cancel
   </button>
 
-  <button type="submit" className="add-station-btn">
+  <button type="submit" className="add-station-btn" onClick={addNewStation}>
     Add Station to the map
   </button>
 </div>
@@ -361,3 +444,12 @@ export default function AddStationMap() {
     </div>
   );
 }
+
+const addNewStation=()=>{
+
+
+}
+
+
+
+

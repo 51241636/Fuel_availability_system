@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import user from "../models/user";
+import user from "../Repository/user";
 import IUser from "../interface/userInterface";
 import { UserDTO } from "../DTO/userDTO";
 import { deleteUserService, getAllUsersService, updateUserSerivice } from "../service/userService";
