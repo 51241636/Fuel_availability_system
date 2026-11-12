@@ -1,62 +1,106 @@
-
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 import Login from "../pages/login";
 import Dashboard from "../pages/dashboard";
 import Register from "../pages/register";
 import AddStationMap from "../pages/addStationMap";
-import {AuthProvider,useAuth } from "../context/AuthConext";
+import { AuthProvider } from "../context/AuthConext";
 import Unauthorized from "../pages/Unauthorized";
 import ProtectedRoute from "../components/protectedRoute";
-import LocationSearchMap from "../pages/addStationMap";
+import MyStation from "../pages/myStations";
+import { StationProvider } from "../context/StationContext";
+import FuelStock from "../pages/fuelStockManage";
+import Setting from "../pages/setting";
+import MapView from "../pages/mapView";
+import ForgotPassword from "../pages/forgotPassword";
+import CustomerMapView from "../pages/customerMapView";
+import CustomerSetting from "../pages/customerSetting";
 
 function AppRoutes() {
   return (
     <BrowserRouter>
-       <AuthProvider>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/unauthorized" element={<Unauthorized />}/>
-          <Route path="/stationMap" element={<AddStationMap />}/>
+      <AuthProvider>
+        <StationProvider>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/unauthorized" element={<Unauthorized />} />
+            <Route path="/stationMap" element={<AddStationMap />} />
 
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute allowedRoles={["owner"]}>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute allowedRoles={["owner"]}>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
 
-          <Route
-            path="/addNewStation"
-            element={
-              <ProtectedRoute allowedRoles={["owner"]}>
-                <AddStationMap />
-              </ProtectedRoute>
-            }
-          />
+            <Route
+              path="/addNewStation"
+              element={
+                <ProtectedRoute allowedRoles={["owner"]}>
+                  <AddStationMap />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/myStation"
+              element={
+                <ProtectedRoute allowedRoles={["owner"]}>
+                  <MyStation />
+                </ProtectedRoute>
+              }
+            />
 
+            <Route
+              path="/fuelStock"
+              element={
+                <ProtectedRoute allowedRoles={["owner"]}>
+                  <FuelStock />
+                </ProtectedRoute>
+              }
+            />
 
-        
-{/* 
-          <Route
-            path="/stationMap"
-            element={
-              <ProtectedRoute />
-            }
-          /> */}
-{/* 
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route
+              path="/setting"
+              element={
+                <ProtectedRoute allowedRoles={["owner"]}>
+                  <Setting />
+                </ProtectedRoute>
+              }
+            />
 
-          <Route path="*" element={<Navigate to="/login" replace />} /> */}
-        </Routes>
+            <Route
+              path="/mapView"
+              element={
+                <ProtectedRoute allowedRoles={["owner"]}>
+                  <MapView />
+                </ProtectedRoute>
+              }
+            />
 
-      
-    </AuthProvider>
-      </BrowserRouter>
+            <Route
+              path="/customerMapView"
+              element={
+                <ProtectedRoute allowedRoles={["customer"]}>
+                  <CustomerMapView />
+                </ProtectedRoute>
+              }
+            />
 
+            <Route
+              path="/customerSetting"
+              element={
+                <ProtectedRoute allowedRoles={["customer"]}>
+                  <CustomerSetting />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </StationProvider>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 

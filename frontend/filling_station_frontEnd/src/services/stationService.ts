@@ -38,9 +38,39 @@ export const loadStation = async (
     }catch(error:any){
         throw error;
     }
-//   console.log(stationDetails);
-//   console.log(position);
-//   console.log(selectedItems);
-//   console.log(openingTime);
-//   console.log(closingTime);
 };
+
+
+export const getUserStationDetail = async()=>{
+    try{
+        const response=await api.get("/getUserFilligStation"); 
+        return response
+    }catch(error:any){
+        throw error.message;
+    }
+}
+
+export const updateStationService=async (stationDetails: StationFormDetail,
+  position: LatLng | null,
+  selectedItems: FuelOption[],
+  openingTime: string,
+  closingTime: string)=>{
+    try{
+
+          const updtedstationData={
+            ...stationDetails,
+            location:position?{
+                type:"Point",
+                coordinates:[position.lng,position.lat]}:null,
+            fuels:selectedItems,
+            openTime:openingTime,
+            closeTime:closingTime
+            }
+            console.log("station id : ",stationDetails.stationId)
+            
+        const response=await api.post("/updateStationDetail",updtedstationData); 
+        return response 
+    }catch(error:any){
+        throw error.message
+    }
+}

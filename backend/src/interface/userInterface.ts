@@ -4,11 +4,15 @@ import { statusManage } from "../enums/statusManage";
 
 export default interface IUser {
     _id?: Types.ObjectId;
-    name: string;
+    firstName:string
+    userName: string;
     email: string;
     address:string;
     contact:string;
     password: string;
+    image?: string;
     userRole:string
+    paymentStatus:string;
     userStatus:statusManage
+
 }
